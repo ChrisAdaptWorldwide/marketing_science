@@ -1,0 +1,30 @@
+ CREATE OR REPLACE TABLE neogen-ga4-export.reporting_neogen.mba_purchase_items
+ AS
+ WITH purchase_items AS (
+  -- Get all items from purchase events
+  SELECT
+    ecommerce.transaction_id,
+    item.item_name, 
+    item_brand,
+    item_category
+  FROM
+    -- This is your specific GA4 events table
+    `neogen-ga4-export.analytics_331328809.events_*`,
+    UNNEST(items) AS item
+  WHERE
+    event_name = 'purchase'
+    -- Filter out nulls for data quality
+    AND ecommerce.transaction_id IS NOT NULL
+    AND item.item_name IS NOT NULL
+    AND item.item_brand IS NOT NULL
+    AND item.item_category IS NOT NULL
+)
+
+-- Select the results from the CTE
+SELECT
+  transaction_id,
+  item_name,
+  item_brand,
+  item_category
+FROM
+  purchase_items;
